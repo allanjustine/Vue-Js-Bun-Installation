@@ -5,6 +5,7 @@ import ModalHeader from "../ModalHeader.vue";
 import ModalBody from "../ModalBody.vue";
 import { onMounted, onUnmounted, reactive, ref } from "vue";
 import Swal from "sweetalert2";
+import { gql } from "@/composables/use-graphql";
 
 const buttonRef = ref<HTMLButtonElement | null>(null);
 const modalRef = ref<{ modalRefItem: HTMLDivElement | null }>({ modalRefItem: null });
@@ -23,32 +24,8 @@ const isLoading = ref(false);
 const isLoadingDelete = ref<{ [key: number]: boolean }>({});
 const socket: WebSocket | null = null;
 
-const users = reactive([
-  {
-    id: 1,
-    name: "John Doe",
-    email: "G6WYU@example.com",
-    created_at: "2023-01-01",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "JANE@example.com",
-    created_at: "2023-01-02",
-  },
-  {
-    id: 3,
-    name: "Alice Johnson",
-    email: "ALICE@example.com",
-    created_at: "2023-01-03",
-  },
-  {
-    id: 4,
-    name: "Bob Brown",
-    email: "BOB@example.com",
-    created_at: "2023-01-04",
-  },
-]);
+type UserData = { id: string; name: string; email: string; createdAt: string };
+const users = reactive<UserData[]>([]);
 
 function toggleModal() {
   open.value = !open.value;
@@ -66,7 +43,11 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  const data = await gql<{
+    users: { id: string; name: string; email: string; createdAt: string }[];
+  }>(`query { users(limit: 20, offset: 0) { id name email createdAt } }`);
+  users.push(...data.users);
   document.addEventListener("click", handleClickOutside);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -96,8 +77,8 @@ function handleSubmit() {
   if (isLoading.value) {
     const { id, ...rest } = formState;
     const submittedItems = {
-      id: users.length + 1,
-      created_at: String(new Date().toISOString().split("T")[0]),
+      id: "aaaa",
+      createdAt: String(new Date().toISOString().split("T")[0]),
       ...rest,
     };
 
@@ -205,13 +186,13 @@ function handleUpdate() {
         id: formState.id,
         name: formState.name,
         email: formState.email,
-        created_at: String(new Date().toISOString().split("T")[0]),
+        createdAt: String(new Date().toISOString().split("T")[0]),
       };
       isLoading.value = false;
       formState.name = "";
       formState.email = "";
       formState.id = 0;
-      handleOpenEdit({ id: 0, name: "", email: "", created_at: "" });
+      handleOpenEdit({ id: 0, name: "", email: "", createdAt: "" });
       Swal.fire({
         icon: "success",
         title: "User updated successfully",
@@ -250,7 +231,7 @@ function handleUpdate() {
             <td class="border border-gray-300 p-3">{{ user.id }}</td>
             <td class="border border-gray-300 p-3">{{ user.name }}</td>
             <td class="border border-gray-300 p-3">{{ user.email }}</td>
-            <td class="border border-gray-300 p-3">{{ user.created_at }}</td>
+            <td class="border border-gray-300 p-3">{{ user.createdAt }}</td>
             <td class="border border-gray-300 p-3">
               <button
                 type="button"
@@ -358,7 +339,7 @@ function handleUpdate() {
           <button
             type="button"
             class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            @click="handleOpenEdit({ id: 0, name: '', email: '', created_at: '' })"
+            @click="handleOpenEdit({ id: 0, name: '', email: '', createdAt: '' })"
           >
             Close
           </button>
