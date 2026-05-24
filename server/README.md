@@ -10,6 +10,6 @@ To run:
 
 ```bash
 bun run dd
-```.
+```
 
 This project was created using `bun init` in bun v1.3.8. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime....
