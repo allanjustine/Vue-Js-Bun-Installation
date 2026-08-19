@@ -15,6 +15,14 @@ A full-stack application with a Vue 3 frontend, a Hono API powered by Bun, Graph
 - PostgreSQL
 - A PostgreSQL connection string in `DATABASE_URL`
 
+On Windows, install Bun with Windows Package Manager:
+
+```powershell
+winget install --id Oven-sh.Bun --exact
+```
+
+Restart the VS Code terminal after installation so the updated `PATH` is loaded, then verify it with `bun --version`.
+
 ## Project Structure
 
 ```text
